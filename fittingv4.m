@@ -1,0 +1,171 @@
+% this function plot the fluctuations
+
+% function fitting (t1)
+
+% sets folder of the program file to have relative paths for the other *.ini
+% files
+% for linux
+fid = fopen('config/program_directory_path.ini','rt');
+% fid = fopen('/media/daw/home/micha/membrane_tracking_project/medidas/filename.txt','rt');
+program_directory_path = fscanf(fid,'%s');
+fclose('all');
+
+% read working directory from config file 'working_directory_path.ini'
+fid = fopen(sprintf('%s/config/working_directory_path.ini',program_directory_path),'rt');
+% fid = fopen('/media/daw/home/micha/membrane_tracking_project/medidas/workingdirectory.txt','rt');
+working_directory_path = fscanf(fid,'%s');
+fclose('all');
+
+% load the parameters of from the configuration file
+fid = fopen(sprintf('%s/config/temp_config.ini',program_directory_path));
+c = textscan(fid, '%s = %f %*[^\n]'); % loads config into the cell 'c'
+fclose(fid);
+
+% convert the cell 'c' to the structure 'parameterStruct'
+parameterStruct = cell2struct(num2cell(c{2}), c{1});
+
+% output of parameters
+parameterStruct;
+
+% n = 6:26;
+% sigma = 1e-07;
+% kappa = 1e-20;
+
+% PARAMETERS
+% temperature = 304.15;
+% integration_time = 1/15;
+% scalefactor_sigma = 1e-07;
+% scalefactor_kappa = 1e-20;
+% TolX = 1e-50;
+% TolFun =1e-50;
+% first_plot_point = 1;
+% last_plot_point = 25;
+% MaxFunEvals = 2000;
+% MaxIter = 2000;
+
+% load data of spectrum
+wavenr = load(sprintf('%s/results/wavenumbers.txt',working_directory_path)); % 
+fluct = load(sprintf('%s/results/fluctuations.txt',working_directory_path));
+sigmacn=load(sprintf('%s/results/sigmacnlinealpormodo.txt',working_directory_path));
+fluct=(fluct-sigmacn');
+
+sigma2u=load(sprintf('%s/results/errores.txt',working_directory_path));
+fluctw = sqrt(sigma2u).*fluct;
+% set region of xdata (predictor) and corresponding ydata (response)
+xdata = wavenr(parameterStruct.firstdatapoint:parameterStruct.lastdatapoint);
+ydata = fluctw(parameterStruct.firstdatapoint:parameterStruct.lastdatapoint);
+sigma2ue = sigma2u(parameterStruct.firstdatapoint:parameterStruct.lastdatapoint);
+% xdata = wavenr(n);
+% ydata = fluct(n);
+% xdata=xdata'
+% ydata=ydata'
+options = statset('MaxIter' , 2000, 'DerivStep',10^-8 );
+% L = chol(covrpr, 'lower') ;
+% z = L\y;
+% modelFun_k = @(b,x) L \ modelFun(b,x);
+% z1=smooth(z,5,'rlowess');
+% x=x'
+beta0 =[1e-8 1e-20]
+modelFunw = @(b,xdata) sqrt(sigma2ue).*model_spectrum(b,xdata);
+
+
+   [bFitw,rw,Jw,COVBw] = nlinfit(xdata,ydata,modelFunw, beta0, options);
+ %F = lsqcurvefit(@model_spectrum, beta0,xdata,ydata,[],[])
+% set fittyp of the function with the following variables:
+% coefficients: sigma, kappa
+% idependent/predictor: qx
+% problemdependent-constants: scalefactor_sigma, scalefactor_kappa
+
+% ftype = fittype('86131723981357271686750207030917009197377559875/13803492693581127574869511724554050904902217944340773110325048447598592*qx^3/(4972140676145015/4503599627370496*(sigma * scalefactor_sigma)*qx^2+5489427335664445/4503599627370496*(kappa * scalefactor_kappa)*qx^4)^3*(112589990684262400/7098112038896037/qx*(4972140676145015/4503599627370496*(sigma * scalefactor_sigma)*qx^2+5489427335664445/4503599627370496*(kappa * scalefactor_kappa)*qx^4)+exp(-112589990684262400/7098112038896037/qx*(4972140676145015/4503599627370496*(sigma * scalefactor_sigma)*qx^2+5489427335664445/4503599627370496*(kappa * scalefactor_kappa)*qx^4))-1)+46781576841508965099649462798448872477313283375/3450873173395281893717377931138512726225554486085193277581262111899648*qx^3/(2278642293337305/562949953421312*(sigma * scalefactor_sigma)*qx^2+2305804747575687/140737488355328*(kappa * scalefactor_kappa)*qx^4)^3*(22517998136852480/2718217551980133/qx*(2278642293337305/562949953421312*(sigma * scalefactor_sigma)*qx^2+2305804747575687/140737488355328*(kappa * scalefactor_kappa)*qx^4)+exp(-22517998136852480/2718217551980133/qx*(2278642293337305/562949953421312*(sigma * scalefactor_sigma)*qx^2+2305804747575687/140737488355328*(kappa * scalefactor_kappa)*qx^4))-1)+54275750806007000319552341842596195131041023225/6901746346790563787434755862277025452451108972170386555162524223799296*qx^3/(6074490001041099/281474976710656*(sigma * scalefactor_sigma)*qx^2+8193319083804227/17592186044416*(kappa * scalefactor_kappa)*qx^4)^3*(28147497671065600/7845598099354671/qx*(6074490001041099/281474976710656*(sigma * scalefactor_sigma)*qx^2+8193319083804227/17592186044416*(kappa * scalefactor_kappa)*qx^4)+exp(-28147497671065600/7845598099354671/qx*(6074490001041099/281474976710656*(sigma * scalefactor_sigma)*qx^2+8193319083804227/17592186044416*(kappa * scalefactor_kappa)*qx^4))-1)+99629978708602951608745794609064503995670102725/220855883097298041197912187592864814478435487109452369765200775161577472*qx^3/(6281631839615597/70368744177664*(sigma * scalefactor_sigma)*qx^2+273801110731667/34359738368*(kappa * scalefactor_kappa)*qx^4)^3*(7036874417766400/3989122658160117/qx*(6281631839615597/70368744177664*(sigma * scalefactor_sigma)*qx^2+273801110731667/34359738368*(kappa * scalefactor_kappa)*qx^4)+exp(-7036874417766400/3989122658160117/qx*(6281631839615597/70368744177664*(sigma * scalefactor_sigma)*qx^2+273801110731667/34359738368*(kappa * scalefactor_kappa)*qx^4))-1)','independent','qx','coefficients',{'sigma','kappa'},'problem',{'scalefactor_sigma','scalefactor_kappa'},'Levenberg-Marquardt')
+%ftype = fittype('27875976884861368019686522917955130027505434715/113078212145816597093331040047546785012958969400039613319782796882727665664*temperature/pi/integration_time^2*qx^3/(4816437861622157/4503599627370496*(sigma * scalefactor_sigma)*qx^2+5151007104157705/4503599627370496*(kappa * scalefactor_kappa)*qx^4)^3*((602054732702769625/2328696403508554*(sigma * scalefactor_sigma)*qx^2+643875888019713125/2328696403508554*(kappa * scalefactor_kappa)*qx^4)*integration_time/qx+exp((-602054732702769625/2328696403508554*(sigma * scalefactor_sigma)*qx^2-643875888019713125/2328696403508554*(kappa * scalefactor_kappa)*qx^4)*integration_time/qx)-1)+29851504503965847925354055635351390910053567435/56539106072908298546665520023773392506479484700019806659891398441363832832*temperature/pi/integration_time^2*qx^3/(3375119391557767/1125899906842624*(sigma * scalefactor_sigma)*qx^2+5058811550670793/562949953421312*(kappa * scalefactor_kappa)*qx^4)^3*((675023878311553400/1559496659010233*(sigma * scalefactor_sigma)*qx^2+2023524620268317200/1559496659010233*(kappa * scalefactor_kappa)*qx^4)*integration_time/qx+exp((-675023878311553400/1559496659010233*(sigma * scalefactor_sigma)*qx^2-2023524620268317200/1559496659010233*(kappa * scalefactor_kappa)*qx^4)*integration_time/qx)-1)+13216177793986403278477768978236182487742188595/28269553036454149273332760011886696253239742350009903329945699220681916416*temperature/pi/integration_time^2*qx^3/(7844301334923487/562949953421312*(sigma * scalefactor_sigma)*qx^2+1707885594978209/8796093022208*(kappa * scalefactor_kappa)*qx^4)^3*((784430133492348700/840566387252587*(sigma * scalefactor_sigma)*qx^2+10930467807860537600/840566387252587*(kappa * scalefactor_kappa)*qx^4)*integration_time/qx+exp((-784430133492348700/840566387252587*(sigma * scalefactor_sigma)*qx^2-10930467807860537600/840566387252587*(kappa * scalefactor_kappa)*qx^4)*integration_time/qx)-1)+18479460224682247805707570423683430840847347905/226156424291633194186662080095093570025917938800079226639565593765455331328*temperature/pi/integration_time^2*qx^3/(7206984303956217/140737488355328*(sigma * scalefactor_sigma)*qx^2+720820941233925/274877906944*(kappa * scalefactor_kappa)*qx^4)^3*((2882793721582486800/1611393727821037*(sigma * scalefactor_sigma)*qx^2+147624128764707840000/1611393727821037*(kappa * scalefactor_kappa)*qx^4)*integration_time/qx+exp((-2882793721582486800/1611393727821037*(sigma * scalefactor_sigma)*qx^2-147624128764707840000/1611393727821037*(kappa * scalefactor_kappa)*qx^4)*integration_time/qx)-1)+187721319900814691551178886958946645927508125/113078212145816597093331040047546785012958969400039613319782796882727665664*temperature/pi/integration_time^2*qx^3/(5657289769229875/35184372088832*(sigma * scalefactor_sigma)*qx^2+1776630372431643/68719476736*(kappa * scalefactor_kappa)*qx^4)^3*((707161221153734375/223074084249452*(sigma * scalefactor_sigma)*qx^2+28426085958906288000/55768521062363*(kappa * scalefactor_kappa)*qx^4)*integration_time/qx+exp((-707161221153734375/223074084249452*(sigma * scalefactor_sigma)*qx^2-28426085958906288000/55768521062363*(kappa * scalefactor_kappa)*qx^4)*integration_time/qx)-1)','independent','qx','coefficients',{'sigma','kappa'},'problem',{'scalefactor_sigma','scalefactor_kappa','temperature','integration_time'});
+
+sigma=bFitw(1);
+kappa=bFitw(2);
+%[fresult,gof,output] = fit(xdata,ydata,ftype,'StartPoint',[1 1],'TolX',parameterStruct.TolX,'TolFun',parameterStruct.TolFun,'MaxFunEvals',parameterStruct.MaxFunEvals,'MaxIter',parameterStruct.MaxIter,'Algorithm','Levenberg-Marquardt','problem',{parameterStruct.scalefactor_sigma,parameterStruct.scalefactor_kappa,parameterStruct.temperature,parameterStruct.integration_time});
+% [fresult,gof,output] = fit(xdata,ydata,ftype,'StartPoint',[1 1],'TolX',1e-50,'TolFun',1e-50,'MaxFunEvals',2000,'MaxIter',2000,'Lower',[0 0],'problem',{scalefactor_sigma scalefactor_kappa,temperature,integration_time})
+
+%  waveruido=load('D:/membrane_tracking_project/medidas/results1/wavenumbers.txt');
+%  fluctuationruido=load('D:/membrane_tracking_project/medidas/results1/fluctuations.txt');
+ g=1:20;
+%  waveruido=waveruido(g,1);
+%  fluctuationruido=fluctuationruido(g,1);
+
+%semilogy(xdata, ydata, 'ro', xdata, model_spectrum(bFitw,xdata), '-b');
+% sigma = fresult.sigma * parameterStruct.scalefactor_sigma;
+% kappa = fresult.kappa * parameterStruct.scalefactor_kappa;
+% kappa./(1.3806e-23.*parameterStruct.temperature);
+figure(2) 
+semilogy(wavenr(parameterStruct.first_plot_point:parameterStruct.last_plot_point),fluct(parameterStruct.first_plot_point:parameterStruct.last_plot_point),'ro');
+hold on;
+% semilogy(xdata,f,'b-',waveruido,fluctuationruido,'bo');
+hold off;
+
+figure(6)
+semilogy(wavenr(parameterStruct.first_plot_point:parameterStruct.last_plot_point),fluct(parameterStruct.first_plot_point:parameterStruct.last_plot_point),'ro');
+hold on;
+semilogy(xdata,model_spectrum(bFitw,xdata),'b-');
+hold off;
+
+figure(7)
+semilogy(wavenr(parameterStruct.first_plot_point:parameterStruct.last_plot_point),fluct(parameterStruct.first_plot_point:parameterStruct.last_plot_point),'.','MarkerSize',20);
+hold on;
+semilogy(xdata,model_spectrum(bFitw,xdata),'k-','LineWidth' ,4);
+errorbar(wavenr,fluct,sigma2u);
+plot(wavenr,sigmacn)
+hold off;
+% figure(6)
+% plot(waveruido,fluctuationruido)
+% save log-file from of 'testcontour' program
+fid = fopen(sprintf('%s/results/log_fitting.txt',working_directory_path),'w');
+fprintf(fid,'Sigma = %g \nKappa = %g \nsse = %g \nrsquare = %g \nadjrsquare = %g',sigma,kappa,gof.sse,gof.rsquare,gof.adjrsquare);
+fclose('all');
+
+fid = fopen(sprintf('%s/results/xdata.txt',working_directory_path),'w');
+fprintf(fid,'%6.9e\n',xdata);
+fclose(fid);
+fid = fopen(sprintf('%s/results/f.txt',working_directory_path),'w');
+fprintf(fid,'%6.9e\n',f);
+fclose(fid);
+
+
+% fid = fopen(sprintf('%s/results/log_fitting1.txt',working_directory_path),'w');
+% fprintf(fid,'%4.2f',sigma);
+% fclose('all');
+
+% this display a message box displaying information on the fitting process
+
+msgbox(sprintf('Sigma = %g \nKappa = %g \nsse = %g \nrsquare = %g \nadjrsquare = %g',sigma,kappa,gof.sse,gof.rsquare,gof.adjrsquare),'Fitting Results','none','non-modal')
+
+savedcontours = load(sprintf('%s/results/savedcontours.txt',working_directory_path));
+r0 = load(sprintf('%s/results/r0.txt',working_directory_path));
+%savedcontours=[4 5 6];
+r0=r0(savedcontours);
+rmean=mean(r0);
+diametro=rmean*2*100;
+
+% fid=fopen('D:/membrane_tracking_project/program/resultscholes50.txt','a+');
+% fprintf(fid,'%6.9f   %6.9e    %6.9e    %6.3f\n',diametro,sigma,kappa,parameterStruct.temperature);
+% fclose(fid);
+
+ci = confint(fresult,0.95);
+     errorkappa=kappa-(ci(1,2)*parameterStruct.scalefactor_kappa);
+     errorsigma=sigma-(ci(1,1)*parameterStruct.scalefactor_sigma);
+     
+fresult;
+% t1=1
+% if (t1==1)
+%     fid = fopen('D:/membrane_tracking_project/program//resultadospolimerosf68.txt','a+');
+%     fprintf(fid,'%6.9e\t  %6.9e\t  %6.9e\t  %6.9e\n',kappa,errorkappa,sigma,errorsigma);
+% 
+%     fclose(fid)
+% end
+
+% fid = fopen(sprintf('%s/results/fittingsigma.txt',working_directory_path),'w');
+% fprintf(fid,'%6.9e    %6.9e\n'sigma,kappa);
+% fclose(fid);
+
+% fid = fopen(sprintf('%s/results/fittinkappa.txt',working_directory_path),'w');
+% fprintf(fid,'%6.9e    %6.9e\n'sigma,kappa);
+% fclose(fid);
+save(sprintf('%s/results/datafitbending.txt',working_directory_path),'f','-ascii')
+save('D:/membrane_tracking_project/program/simulacion/wave.txt','xdata','-ascii');

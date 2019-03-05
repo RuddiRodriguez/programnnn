@@ -1,0 +1,62 @@
+function a = auto2(data,data,1,m,n);
+
+
+
+
+u=zeros(n,m);
+u2=zeros(n,m);
+
+for j=1:m
+    for i=1:n
+    diff=data(i)-data(1);
+    diff2=((data(i)-data(1)).^2);
+    u(i,j)=diff;
+    u2(i,j)=diff2;
+    end
+    
+end
+
+
+msd2=zeros(1,n);
+for h=1:n
+msd2(h)=mean(u2(h,1:m));
+end
+
+
+msd=zeros(1,n);
+for h=1:n
+msd(h)=(mean(u(h,1:m))).^2;
+end
+
+mst=msd2-msd;
+
+figure(23);
+loglog(msd);
+
+
+
+u=zeros(n,m);
+u2=zeros(n,m);
+
+for j=1:m
+    for i=1:n
+    diff=data1(i)-data1(1);
+    diff2=((data1(i)-data1(1)).^2);
+    u(i,j)=diff;
+    u2(i,j)=diff2;
+    end
+    
+end
+
+
+msd2=zeros(1,n);
+for h=1:n
+msd2(h)=mean(u2(h,1:m));
+end
+
+
+msd=zeros(1,n);
+for h=1:n
+msd(h)=(mean(u(h,1:m))).^2;
+end
+

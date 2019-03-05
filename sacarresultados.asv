@@ -1,0 +1,7 @@
+
+fid = fopen(index, mode)
+%  index=zeros(41,1)
+for j=8:48
+index = load(sprintf('D:/membrane_tracking_project/medidas/test%i/results/contourclosedindex.txt',j)); % load the membrane position in polar coordinates
+printf()
+end

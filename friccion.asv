@@ -1,0 +1,6 @@
+function b=friccion(K,pendiente,porcientocolesterol)
+b=K./(2*pendiente)
+save(sprintf('D:/membrane_tracking_project/coeficientefriccion%porcientocolesterol',working_directory_path,j),'xymempos','-ascii');
+fid=fopen('D:/membrane_tracking_project/coeficientefriccion%porcientocolesterol.txt','a+');
+fprintf(fid,'%6.3e   %6.2f\n',b,porcientocolesterol);
+fclose(fid)

@@ -1,0 +1,50 @@
+% fid = fopen('config/program_directory_path.ini','rt');
+% % fid = fopen('/media/daw/home/micha/membrane_tracking_project/medidas/filename.txt','rt');
+% program_directory_path = fscanf(fid,'%s');
+% fclose('all');
+% 
+% % read working directory from config file 'working_directory_path.ini'
+% fid = fopen(sprintf('%s/config/working_directory_path.ini',program_directory_path),'rt');
+% % fid = fopen('/media/daw/home/micha/membrane_tracking_project/medidas/workingdirectory.txt','rt');
+% working_directory_path = fscanf(fid,'%s');
+% fclose('all');
+% 
+% % load the parameters of from the configuration file
+% fid = fopen(sprintf('%s/config/temp_config.ini',program_directory_path));
+% c = textscan(fid, '%s = %f %*[^\n]'); % loads config into the cell 'c'
+% fclose(fid);
+% 
+% % convert the cell 'c' to the structure 'parameterStruct'
+% parameterStruct = cell2struct(num2cell(c{2}), c{1});
+% 
+% % output of parameters
+% parameterStruct;
+% % 
+% %x(1)=3e-6;x(2)=1e-19;
+%  v=parameterStruct.lastdatapoint;
+%  v1=parameterStruct.firstdatapoint;
+%  C0=-0.76;
+%  integration_time=parameterStruct.integration_time;
+m=13
+i=0
+variable=zeros(50,m)
+for f=1:m
+i=i+1
+    f;
+    [def def1]=set_path_spectrum(f)
+
+fid=fopen(def);
+
+flucta = load(sprintf('%s/fluctuationsa.txt',def));
+
+sigmcn=load(sprintf('%s/',def));
+
+sigmcn=(sigmcn.*2)./(pi*(rmean.^3));
+
+flucta=(flucta)-sigmcn;
+
+variable(:,i)=flucta
+fclose(fid)
+
+end
+

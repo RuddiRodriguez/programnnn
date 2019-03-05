@@ -1,0 +1,19 @@
+
+
+kc=1e-19;
+kbt=1.38e-23*298;
+ excess=2000
+% l=2:10000;
+temp=0
+for l=2:10000
+y=((2.*l+1)./((l.^2)+l+200));
+
+y=y+temp;
+temp=y;
+end
+aeaexc=y.*(kbt./(kc.*2))
+
+% excess=2000
+ l=2:10000;
+y=((2.*l+1)./((l.^2)+l+200));
+suma=(sum(y)).*(kbt./(kc.*2))

@@ -1,0 +1,8 @@
+fileFolder = fullfile(matlabroot,'toolbox','images','imdemos');
+%fileFolder = fullfile('D:\ftp\jpg\analisis')
+
+dirOutput = dir(fullfile(fileFolder,'images*.tif'))
+fileNames = {dirOutput.name}';
+numFrames = numel(fileNames);
+%I=imread('D:\ftp\jpg\analisis\images01.tif')
+I = imread(fileNames{1});
